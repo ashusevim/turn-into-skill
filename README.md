@@ -55,6 +55,10 @@ test.sh                                      full check suite
 
 28 checks: skill shape, dedup/dry-run/update phases, ingestors, smoke-on-demos, scaffold round-trip.
 
+## Skill CI
+
+`.github/workflows/skill-ci.yml` runs on push + weekly: `scripts/drift-check.sh` re-runs smoke on every skill and hashes each `source:` URL. Changed source → red check telling you to run `--update`. First run baselines hashes into `.skill-ci/hashes/` (committed).
+
 ## Skills built with it
 
 See [agent-skills](../agent-skills): gmail-api, tailwind-utilities, postgres-psql, github-actions — plus stripe-webhooks and mental-math in `examples/`.

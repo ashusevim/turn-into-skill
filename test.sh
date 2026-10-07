@@ -26,6 +26,10 @@ grep -q 'dry-run' "$SKILL" && ok "dry-run supported" || bad "dry-run missing"
 grep -q '\-\-force' "$SKILL" && ok "force flag supported" || bad "force missing"
 grep -q '\-\-update' "$SKILL" && ok "update flow present" || bad "update flow missing"
 [[ -x "$ROOT/skills/turn-into-skill/scripts/local-search.sh" ]] && ok "local-search executable" || bad "local-search missing"
+[[ -f "$ROOT/.github/workflows/skill-ci.yml" ]] && ok "CI workflow present" || bad "CI workflow missing"
+[[ -x "$ROOT/skills/turn-into-skill/scripts/drift-check.sh" ]] && ok "drift-check executable" || bad "drift-check missing"
+bash "$ROOT/skills/turn-into-skill/scripts/drift-check.sh" >/dev/null 2>&1 \
+  && ok "drift-check green on this repo" || bad "drift-check red on this repo"
 [[ -f "$ROOT/skills/turn-into-skill/scripts/clean-transcript.py" ]] && ok "clean-transcript present" || bad "clean-transcript missing"
 # local-search actually finds installed demo skills (Layer 0 proof)
 HITS="$(bash "$ROOT/skills/turn-into-skill/scripts/local-search.sh" "mental math" | grep -c 'mental-math')"
