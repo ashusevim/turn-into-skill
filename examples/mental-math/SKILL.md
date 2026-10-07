@@ -1,8 +1,8 @@
 ---
 name: mental-math
-version: 1
+version: 2
 source: https://youtu.be/1wAr2Kbe-GM
-description: Multiply fast without a calculator. Use when doing mental math, multiplying by 11, squaring numbers ending in 5, multiplying two-digit numbers with matching first digits, or practicing fast arithmetic tricks.
+description: Multiply fast without a calculator. Use when doing two-digit mental multiplication: multiplying by 11, squaring numbers ending in 5, matched-first-digit pairs like 44x46, or drilling speed arithmetic.
 ---
 
 # Mental Math

@@ -36,9 +36,11 @@ for t in 'youtube' 'pdf' 'openapi' 'notion'; do
   grep -qi "$t" "$SKILL" && ok "ingestor: $t" || bad "ingestor missing: $t"
 done
 
-# improvement 1: self-test loop
+# improvement 1: self-test loop + trigger test
 grep -q 'smoke-skill.sh' "$SKILL" && ok "self-test phase present" || bad "self-test missing"
 grep -qi 'live trial' "$SKILL" && ok "live trial present" || bad "live trial missing"
+grep -qi 'trigger test' "$SKILL" && ok "trigger test present" || bad "trigger test missing"
+grep -q 'no-triggers' "$SKILL" && ok "no-triggers flag present" || bad "no-triggers missing"
 
 # improvement 4: publish path
 grep -q 'skills add' README.md && ok "publish install line in README" || bad "README install line"

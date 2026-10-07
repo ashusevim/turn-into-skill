@@ -1,6 +1,6 @@
 ---
 name: turn-into-skill
-version: 3
+version: 4
 source: https://github.com/ashusevim/turn-into-skill
 description: Turn anything into a reusable agent skill. Use when user says turn into skill, make this a skill, convert docs/repo/URL/text/video/PDF/OpenAPI/notes into a skill, or invokes /turn-into-skill. Checks existing skills first, scaffolds SKILL.md only on miss, self-tests before shipping.
 ---
@@ -9,7 +9,7 @@ description: Turn anything into a reusable agent skill. Use when user says turn 
 
 Take any input — URL, repo, docs, video, PDF, OpenAPI spec, file, directory, pasted text — and turn it into a portable agent skill. Dedup first. Build only on miss. Self-test before shipping.
 
-Usage: `/turn-into-skill <url | file-path | dir-path | pasted-text> [--force] [--dry-run] [--update <skill-dir>]`
+Usage: `/turn-into-skill <url | file-path | dir-path | pasted-text> [--force] [--dry-run] [--update <skill-dir>] [--no-triggers]`
 
 ## Phase 0 — Classify input
 
@@ -148,15 +148,21 @@ Never ship an untested skill.
    ```
    Fix all FAILs: frontmatter, name==dir, trigger-rich description, done-when bounds, resolving references, no secrets.
 2. Live trial: install to the current project (`npx -y skills add ./<name> -p -y`), load the skill, run it on one sample task drawn from the source material. Pass = correct outcome following its own steps. On failure, fix the skill (not the task), re-run smoke, retry once.
-3. After 2 failed iterations: report DONE_WITH_CONCERNS naming the gap instead of silently shipping.
+3. Trigger test (default on; `--no-triggers` skips for personal builds):
+   a. Write 20 prompts from the skill's When-to-use branches: 10 positives (should fire, paraphrased — synonyms count) + 10 negatives (same domain, different object; must stay silent).
+   b. Run each against a fresh agent with the skill installed (subagent per prompt, or batched where isolation holds). Record fire/silent per prompt.
+   c. Score: 10/10 + 10/10 = pass. Else rewrite the `description` toward the misses (add missed phrasing, exclude false triggers), re-run. Max 3 rounds.
+   d. Ship the scorecard: per-round pass rate + final description in the handover.
+4. After 2 failed iterations: report DONE_WITH_CONCERNS naming the gap instead of silently shipping.
 
-Completion: smoke script exits 0, one live trial passes.
+Completion: smoke script exits 0, one live trial passes, trigger scorecard green (or skipped with `--no-triggers`).
 
 ## Phase 6 — Verify + hand over
 
 - [ ] Dedup verdict recorded (reused-local / reused-registry / miss / rebuilt-stale)
 - [ ] smoke-skill.sh exits 0
 - [ ] live trial passes
+- [ ] trigger scorecard green (or `--no-triggers` noted)
 - [ ] no secrets, tokens, personal data
 - [ ] report DONE with: path, install command (`npx skills add <path-or-url> -g -a <agent> -y`), one-line trigger, what was deduped
 
