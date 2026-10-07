@@ -1,48 +1,50 @@
 # turn-into-skill
 
-`/turn-into-skill <anything>` — checks if a skill already exists, installs it if so. Builds + self-tests one if not.
+One command that turns anything into an agent skill:
 
-## Install (30s)
+```
+/turn-into-skill <url | file-path | dir-path | pasted text>
+```
 
-**OpenCode (slash command):**
+It checks whether the skill already exists (local + skills.sh). If yes, it points you to the install and stops. If no, it builds one and tests it before handing it over.
+
+Handles: docs pages, GitHub repos, YouTube videos, PDFs, OpenAPI specs, Notion pages, npm packages, local files, pasted text.
+
+## Install
+
+OpenCode slash command:
+
 ```bash
 cp commands/turn-into-skill.md ~/.config/opencode/commands/turn-into-skill.md
 ```
 
-**Any agent (Claude Code, Cursor, OpenCode…):**
+Any agent (pick yours after `-a` — plain `-g` installs everywhere including PromptScript, which fails):
+
 ```bash
-npx -y skills add ./skills/turn-into-skill -g -a <agent> -y
-# e.g. -a opencode | -a claude-code | -a cursor
-# NOTE: bare -g fans out to all agents incl. PromptScript and fails. Always scope -a.
+npx -y skills add ashusevim/turn-into-skill -g -a opencode -y
 ```
 
-Verify:
-```bash
-head -n 4 skills/turn-into-skill/SKILL.md
-./test.sh
-```
+## How it works
 
-## Use
+1. Classifies the input (url-docs, repo, video, pdf, openapi, notion, package, file, dir, text).
+2. Dedups: installed skills first, then `npx skills find` with paraphrases, scoped searches, and a staleness check. Exact + fresh match = stop and suggest the install.
+3. Ingests the source (capped, workflow only — no trivia).
+4. Distills to 5–9 steps, each ending in a checkable done condition.
+5. Scaffolds `SKILL.md` with `version:` + `source:` frontmatter.
+6. Self-tests: `scripts/smoke-skill.sh` must exit 0, then one task from the source material run against the skill. Two fix attempts max.
 
-```
-/turn-into-skill https://docs.stripe.com/webhooks
-/turn-into-skill https://youtu.be/<id>
-/turn-into-skill ./api/openapi.yaml
-/turn-into-skill ./notes/anything.md --dry-run
-/turn-into-skill <paste raw text> --force
-```
+Flags: `--force` skips dedup. `--dry-run` stops after the verdict. `--update <skill-dir>` re-ingests the source, patches gaps, bumps the version.
 
-Behavior: classify → 3-layer dedup (registry + aggregators + staleness) → ingest → distill → scaffold → smoke-test + live trial → handover.
-
-## Layout
+## Repo layout
 
 ```
-skills/turn-into-skill/SKILL.md            # portable skill
-skills/turn-into-skill/scripts/smoke-skill.sh  # deterministic gate (Phase 5)
-skills/turn-into-skill/scripts/local-search.sh # Layer 0 dedup
-skills/turn-into-skill/scripts/clean-transcript.py  # video ingestor
-commands/turn-into-skill.md                # OpenCode slash command wrapper
-examples/                                 # demo outputs (excluded from install)
+skills/turn-into-skill/SKILL.md              the skill itself
+skills/turn-into-skill/scripts/smoke-skill.sh     quality gate (frontmatter, triggers, refs, secrets)
+skills/turn-into-skill/scripts/local-search.sh    dedup against installed skills
+skills/turn-into-skill/scripts/clean-transcript.py  YouTube caption cleanup
+commands/turn-into-skill.md                  OpenCode slash-command wrapper
+examples/                                    demo outputs (not installed)
+test.sh                                      full check suite
 ```
 
 ## Test
@@ -51,20 +53,8 @@ examples/                                 # demo outputs (excluded from install)
 ./test.sh
 ```
 
-Checks frontmatter, name==dir, dedup/ingest/self-test phases present, smoke script passes on the demo skill, scaffold still works.
+28 checks: skill shape, dedup/dry-run/update phases, ingestors, smoke-on-demos, scaffold round-trip.
 
-## Publish
+## Skills built with it
 
-```bash
-# 1. push (needs a GitHub repo — create once)
-git init 2>/dev/null; git add -A; git commit -m "turn-into-skill"
-gh repo create turn-into-skill --public --source=. --push
-# without gh: create repo on github.com, then
-# git remote add origin git@github.com:<owner>/turn-into-skill.git && git push -u origin main
-
-# 2. install from GitHub anywhere
-npx -y skills add <owner>/turn-into-skill -g -a <agent> -y
-
-# 3. list on skills.sh (auto-indexed from GitHub once public)
-# verify at https://skills.sh/<owner>/turn-into-skill/turn-into-skill
-```
+See [agent-skills](../agent-skills): gmail-api, tailwind-utilities, postgres-psql, github-actions — plus stripe-webhooks and mental-math in `examples/`.
