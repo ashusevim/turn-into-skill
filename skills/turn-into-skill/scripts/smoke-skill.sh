@@ -26,6 +26,10 @@ DLEN="$(grep '^description:' "$SKILL" | wc -c)"
 grep -qi '^description:.*\b\(use\|when\|build\|create\|turn\|handle\|manage\|test\|debug\|write\|review\|deploy\|receive\|verify\|set up\)[ ,]' "$SKILL" \
   && ok "description has trigger verbs" || bad "description lacks trigger verbs"
 
+# version + source (update loop needs them)
+grep -qE '^version: [0-9]+$' "$SKILL" && ok "version present" || bad "version missing (add 'version: 1')"
+grep -qE '^source: .+' "$SKILL" && ok "source present" || bad "source missing (add 'source: <url|path>')"
+
 # steps have completion bounds
 grep -qi 'done when' "$SKILL" && ok "steps have done-when bounds" || bad "no done-when bounds"
 

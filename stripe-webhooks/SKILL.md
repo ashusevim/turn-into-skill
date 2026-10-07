@@ -1,5 +1,7 @@
 ---
 name: stripe-webhooks
+version: 1
+source: https://docs.stripe.com/webhooks
 description: Receive and handle Stripe webhook events. Use when setting up a Stripe webhook endpoint, verifying Stripe-Signature headers, handling payment_intent/subscription/invoice events, testing webhooks locally with stripe listen, debugging delivery failures, or working with thin vs snapshot events.
 ---
 

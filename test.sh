@@ -16,11 +16,20 @@ head -n 1 "$SKILL" | grep -q '^---$' && ok "SKILL frontmatter opens" || bad "SKI
 grep -q '^name: turn-into-skill$' "$SKILL" && ok "skill name matches" || bad "skill name"
 grep -q '^name: turn-into-skill$' "$CMD" && ok "command name matches" || bad "command name"
 
-# improvement 2: 3-layer dedup
+# improvement 2: 4-layer dedup (local + registry + aggregators + staleness)
+grep -q 'local-search.sh' "$SKILL" && ok "dedup Layer 0 local present" || bad "dedup Layer 0"
 grep -q -- '--owner vercel-labs' "$SKILL" && ok "dedup aggregators present" || bad "dedup aggregators"
 grep -qi 'stale' "$SKILL" && ok "staleness check present" || bad "staleness missing"
+grep -qi 'overlap rubric' "$SKILL" && ok "overlap rubric present" || bad "overlap rubric missing"
+grep -qi 'paraphrase' "$SKILL" && ok "paraphrase queries present" || bad "paraphrases missing"
 grep -q 'dry-run' "$SKILL" && ok "dry-run supported" || bad "dry-run missing"
 grep -q '\-\-force' "$SKILL" && ok "force flag supported" || bad "force missing"
+grep -q '\-\-update' "$SKILL" && ok "update flow present" || bad "update flow missing"
+[[ -x "$ROOT/skills/turn-into-skill/scripts/local-search.sh" ]] && ok "local-search executable" || bad "local-search missing"
+[[ -f "$ROOT/skills/turn-into-skill/scripts/clean-transcript.py" ]] && ok "clean-transcript present" || bad "clean-transcript missing"
+# local-search actually finds installed demo skills (Layer 0 proof)
+HITS="$(bash "$ROOT/skills/turn-into-skill/scripts/local-search.sh" "mental math" | grep -c 'mental-math')"
+[[ "$HITS" -gt 0 ]] && ok "local-search finds installed skill" || bad "local-search finds nothing"
 
 # improvement 3: new ingestors
 for t in 'youtube' 'pdf' 'openapi' 'notion'; do

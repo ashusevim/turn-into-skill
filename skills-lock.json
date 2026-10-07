@@ -1,6 +1,11 @@
 {
   "version": 1,
   "skills": {
+    "mental-math": {
+      "source": "./mental-math",
+      "sourceType": "local",
+      "computedHash": "5ec23b42bcd75fabfeff1d9c8c8bcd9cfbc55c0becb3d930b30c10387ee5ead7"
+    },
     "stripe-webhooks": {
       "source": "./stripe-webhooks",
       "sourceType": "local",

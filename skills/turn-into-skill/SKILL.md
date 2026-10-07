@@ -1,5 +1,7 @@
 ---
 name: turn-into-skill
+version: 3
+source: https://github.com/ashusevim/turn-into-skill
 description: Turn anything into a reusable agent skill. Use when user says turn into skill, make this a skill, convert docs/repo/URL/text/video/PDF/OpenAPI/notes into a skill, or invokes /turn-into-skill. Checks existing skills first, scaffolds SKILL.md only on miss, self-tests before shipping.
 ---
 
@@ -7,7 +9,7 @@ description: Turn anything into a reusable agent skill. Use when user says turn 
 
 Take any input — URL, repo, docs, video, PDF, OpenAPI spec, file, directory, pasted text — and turn it into a portable agent skill. Dedup first. Build only on miss. Self-test before shipping.
 
-Usage: `/turn-into-skill <url | file-path | dir-path | pasted-text> [--force] [--dry-run]`
+Usage: `/turn-into-skill <url | file-path | dir-path | pasted-text> [--force] [--dry-run] [--update <skill-dir>]`
 
 ## Phase 0 — Classify input
 
@@ -32,9 +34,14 @@ Completion: input type named, working name chosen.
 
 ## Phase 1 — Dedup (mandatory, skipped only by `--force`)
 
-Never build what already exists. Check three layers, cheapest first.
+Never build what already exists. Check four layers, cheapest first.
 
-1. Derive 3–5 keyword queries (domain + task, e.g. `stripe webhooks`, not `stripe`).
+0. Layer 0 — local: are they already holding it?
+   ```bash
+   bash <turn-into-skill-dir>/skills/turn-into-skill/scripts/local-search.sh <keyword1> <keyword2>
+   ```
+   Searches installed skills (global + project). A local hit for the exact task = reuse, no build.
+1. Derive 3–5 keyword queries (domain + task) plus 1–2 paraphrases (`mental math` → also `vedic maths`, `fast arithmetic`). Keyword search misses reworded equivalents; paraphrases catch them.
 2. Layer A — registry: run for each query:
    ```bash
    npx -y skills find "<query>" 2>&1 | head -n 30
@@ -46,6 +53,12 @@ Never build what already exists. Check three layers, cheapest first.
    ```
    plus webfetch `https://skills.sh/` topic/leaderboard for the domain.
 4. Layer C — staleness: for the top 1–2 hits, open the skills.sh page. Note installs, repo stars, and last-update signal. A hit is **fresh** if actively maintained and covering the task; **stale** if installs are low (<500), repo quiet >6 months, or missing the core of the input.
+
+Overlap rubric — score each candidate, don't eyeball it. The input's task verbs (from Phase 0 classification + source title) vs the candidate's `description` + When-to-use branches:
+- 3+ shared task verbs on the same object (e.g. input `verify stripe signatures`, candidate `verifying Stripe-Signature headers`) = exact.
+- Same domain, different object (both `stripe`, one `checkout` one `webhooks`) = adjacent.
+- Shared domain word only, or shared generic verbs (`build`, `manage`) with no shared object = miss.
+Paraphrases count: `mental math` ≡ `vedic maths` ≡ `fast arithmetic` (same object: head-calculation tricks). `math olympiad` ≢ `mental math` (proofs vs calculation) = adjacent at best.
 
 Score: exact-task + fresh = reuse. Exact-task + stale = offer update (rebuild scoped as `--update`, credit original). Adjacent-task = mention. No match = miss.
 
@@ -94,8 +107,13 @@ Write `<working-name>/SKILL.md`:
 ```md
 ---
 name: <working-name>
+version: 1
+source: <url | path | brief origin note>
 description: <does-what + 3-5 trigger phrases starting with verbs>
 ---
+```
+
+New builds start at `version: 1`. Every `--update` bumps it and appends one line under a `## Changelog` section (keep last 5).
 
 # <Title>
 
@@ -136,10 +154,19 @@ Completion: smoke script exits 0, one live trial passes.
 
 ## Phase 6 — Verify + hand over
 
-- [ ] Dedup verdict recorded (reused / miss / rebuilt-stale)
+- [ ] Dedup verdict recorded (reused-local / reused-registry / miss / rebuilt-stale)
 - [ ] smoke-skill.sh exits 0
 - [ ] live trial passes
 - [ ] no secrets, tokens, personal data
 - [ ] report DONE with: path, install command (`npx skills add <path-or-url> -g -a <agent> -y`), one-line trigger, what was deduped
 
 Ship the skill + install line, not a plan.
+
+## Updating — `--update <skill-dir> [<new-source>]`
+
+Sources change; skills rot. Refresh instead of rebuilding.
+
+1. Read the skill's `source:` + `version:` frontmatter. Re-ingest the source (or `<new-source>` if given) per Phase 2.
+2. Diff coverage: what does the source teach that the skill lacks? What does the skill claim the source no longer supports? Change only those parts — never rewrite passing steps.
+3. Bump `version:` +1, append one `## Changelog` line (`v<N>: <what changed, one line>`).
+4. Run Phase 5 in full (smoke + live trial on the changed steps). Hand over with old→new version noted.
