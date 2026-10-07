@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "skills": {
+    "stripe-webhooks": {
+      "source": "./stripe-webhooks",
+      "sourceType": "local",
+      "computedHash": "9a43339a12b5164a4748132903421a5369d37c951a9ee15d401909c780a4d51b"
+    }
+  }
+}
