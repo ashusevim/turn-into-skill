@@ -39,8 +39,10 @@ Behavior: classify → 3-layer dedup (registry + aggregators + staleness) → in
 ```
 skills/turn-into-skill/SKILL.md            # portable skill
 skills/turn-into-skill/scripts/smoke-skill.sh  # deterministic gate (Phase 5)
+skills/turn-into-skill/scripts/local-search.sh # Layer 0 dedup
+skills/turn-into-skill/scripts/clean-transcript.py  # video ingestor
 commands/turn-into-skill.md                # OpenCode slash command wrapper
-stripe-webhooks/                           # demo output, built with v1
+examples/                                 # demo outputs (excluded from install)
 ```
 
 ## Test

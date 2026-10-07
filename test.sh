@@ -45,7 +45,7 @@ grep -q 'skills add' README.md && ok "publish install line in README" || bad "RE
 grep -q 'skills.sh' README.md && ok "skills.sh listing step in README" || bad "README skills.sh"
 
 # dogfood: smoke script passes on demo skill built earlier
-if bash "$SMOKE" "$ROOT/stripe-webhooks"; then
+if bash "$SMOKE" "$ROOT/examples/stripe-webhooks"; then
   ok "smoke passes on demo stripe-webhooks"
 else
   bad "smoke fails on demo stripe-webhooks"
