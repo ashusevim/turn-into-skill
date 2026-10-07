@@ -1,7 +1,7 @@
 ---
 name: turn-into-skill
 version: 4
-source: https://github.com/ashusevim/turn-into-skill
+source: https://github.com/vercel-labs/skills
 description: Turn anything into a reusable agent skill. Use when user says turn into skill, make this a skill, convert docs/repo/URL/text/video/PDF/OpenAPI/notes into a skill, or invokes /turn-into-skill. Checks existing skills first, scaffolds SKILL.md only on miss, self-tests before shipping.
 ---
 

@@ -37,9 +37,35 @@ for d in "${DIRS[@]}"; do
   src="$(grep -E '^source: ' "$d/SKILL.md" | head -1 | sed 's/^source: //')"
   [[ -n "$src" ]] || { bad "$name has no source:"; continue; }
   if [[ "$src" =~ ^https?:// ]]; then
-    body="$(curl -sL --max-time 60 "$src" 2>/dev/null)"
-    [[ -n "$body" ]] || { bad "$name source unreachable: $src"; continue; }
-    sum="$(printf '%s' "$body" | sha256sum | cut -d' ' -f1)"
+    sum=""
+    if [[ "$src" =~ ^https?://github\.com/([^/]+)/([^/]+) ]]; then
+      # repo pages embed per-request tokens: fingerprint the default-branch HEAD instead
+      api="https://api.github.com/repos/${BASH_REMATCH[1]}/${BASH_REMATCH[2]%%.git}"
+      sum="$(curl -sL --max-time 60 "$api/commits/HEAD" 2>/dev/null | grep -m1 '"sha"' | cut -d'"' -f4)"
+      [[ -n "$sum" ]] && sum="commit:$sum" || { bad "$name source API unreachable: $api"; continue; }
+    else
+      body="$(curl -sL --max-time 60 "$src" 2>/dev/null)"
+      [[ -n "$body" ]] || { bad "$name source unreachable: $src"; continue; }
+      # raw HTML wobbles (per-request tokens): hash visible text only
+      sum="$(printf '%s' "$body" | python3 -c "
+import sys, re, html
+try:
+    from html.parser import HTMLParser
+    class T(HTMLParser):
+        def __init__(self):
+            super().__init__(); self.out=[]; self.skip=False
+        def handle_starttag(self,t,a): self.skip = t in ('script','style','noscript')
+        def handle_endtag(self,t): self.skip=False
+        def handle_data(self,d):
+            if not self.skip: self.out.append(d)
+    p=T(); p.feed(sys.stdin.read()); txt=' '.join(p.out)
+except Exception:
+    txt=re.sub(r'<script.*?</script>|<style.*?</style>|<!--.*?-->|<[^>]+>',' ',sys.stdin.read(),flags=re.S)
+import hashlib
+print(hashlib.sha256(re.sub(r'\s+',' ',html.unescape(txt)).strip().encode()).hexdigest())
+")"
+      [[ -n "$sum" ]] || { bad "$name fingerprint failed: $src"; continue; }
+    fi
     hashfile="$HASHDIR/$name.sha"
     if [[ ! -f "$hashfile" ]]; then
       printf '%s  %s\n' "$sum" "$src" > "$hashfile"
