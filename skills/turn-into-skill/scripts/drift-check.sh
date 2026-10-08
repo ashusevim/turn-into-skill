@@ -41,10 +41,12 @@ for d in "${DIRS[@]}"; do
     if [[ "$src" =~ ^https?://github\.com/([^/]+)/([^/]+) ]]; then
       # repo pages embed per-request tokens: fingerprint the default-branch HEAD instead
       api="https://api.github.com/repos/${BASH_REMATCH[1]}/${BASH_REMATCH[2]%%.git}"
-      sum="$(curl -sL --max-time 60 "$api/commits/HEAD" 2>/dev/null | grep -m1 '"sha"' | cut -d'"' -f4)"
+      # --proto '=https': never downgrade to plain http on redirect.
+      # --max-filesize: refuse huge payloads instead of hashing them.
+      sum="$(curl -sL --proto '=https' --max-time 60 --max-filesize 5000000 "$api/commits/HEAD" 2>/dev/null | grep -m1 '"sha"' | cut -d'"' -f4)"
       [[ -n "$sum" ]] && sum="commit:$sum" || { bad "$name source API unreachable: $api"; continue; }
     else
-      body="$(curl -sL --max-time 60 "$src" 2>/dev/null)"
+      body="$(curl -sL --proto '=https' --max-time 60 --max-filesize 5000000 "$src" 2>/dev/null)"
       [[ -n "$body" ]] || { bad "$name source unreachable: $src"; continue; }
       # raw HTML wobbles (per-request tokens): hash visible text only
       sum="$(printf '%s' "$body" | python3 -c "

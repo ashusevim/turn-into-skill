@@ -2,14 +2,21 @@
 # local-search.sh <keyword> [keyword...] — Layer 0 dedup: grep installed skills.
 # Searches global (~/.agents/skills, ~/.config/opencode/skills) and project (.agents/skills, skills/).
 # Prints "name | dir | description" per hit. Exit 0 always (no hits = empty output).
+# Safety: keywords are matched as literal fixed strings (no regex), so a
+# malicious keyword cannot turn into a hostile pattern or option.
 set -uo pipefail
+[[ $# -eq 0 ]] && exit 0
 DIRS=("$HOME/.agents/skills" "$HOME/.config/opencode/skills" "./.agents/skills" "./skills")
 seen=""
 for d in "${DIRS[@]}"; do
   [[ -d "$d" ]] || continue
   while IFS= read -r f; do
     for kw in "$@"; do
-      if grep -qi "$kw" "$f"; then
+      [[ -n "$kw" ]] || continue
+      # -F: fixed-string match (keyword treated as literal text, not regex).
+      # -e: keyword treated as pattern even if it starts with '-'.
+      # --: end of options so a crafted keyword can't become a grep flag.
+      if grep -qiF -e "$kw" -- "$f"; then
         name="$(grep '^name:' "$f" | head -1)"
         [[ "$seen" == *"$f"* ]] || { echo "$name | $f"; seen="$seen $f"; }
         break

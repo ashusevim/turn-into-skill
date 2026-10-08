@@ -2,10 +2,20 @@
 """clean-transcript.py <input.vtt> — VTT (incl. rolling-caption auto-subs) to clean text.
 Collapses consecutive repeated phrases, strips tags/timestamps. Prints to stdout."""
 
-import re, sys
+import os
+import re
+import sys
+
+MAX_INPUT_BYTES = 20 * 1024 * 1024  # refuse huge caption files instead of loading them
 
 
 def main(path):
+    if not path or not os.path.isfile(path):
+        print(f"usage: {os.path.basename(sys.argv[0])} <input.vtt>", file=sys.stderr)
+        raise SystemExit(2)
+    if os.path.getsize(path) > MAX_INPUT_BYTES:
+        print(f"refusing input larger than {MAX_INPUT_BYTES} bytes: {path}", file=sys.stderr)
+        raise SystemExit(2)
     raw = open(path, encoding="utf-8", errors="replace").read()
     chunks = []
     for block in raw.split("\n\n"):
@@ -36,4 +46,7 @@ def main(path):
 
 
 if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print(f"usage: {os.path.basename(sys.argv[0])} <input.vtt>", file=sys.stderr)
+        raise SystemExit(2)
     main(sys.argv[1])
