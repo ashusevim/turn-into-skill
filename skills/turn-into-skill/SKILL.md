@@ -1,6 +1,6 @@
 ---
 name: turn-into-skill
-version: 5
+version: 6
 source: https://github.com/vercel-labs/skills
 description: Turn anything into a reusable agent skill. Use when user says turn into skill, make this a skill, convert docs/repo/URL/text/video/PDF/OpenAPI/notes into a skill, or invokes /turn-into-skill. Checks existing skills first, scaffolds SKILL.md only on miss, self-tests before shipping.
 ---
@@ -174,7 +174,7 @@ Completion: smoke script exits 0, one live trial passes, trigger scorecard green
 - [ ] live trial passes
 - [ ] trigger scorecard green (or `--no-triggers` noted)
 - [ ] no secrets, tokens, personal data
-- [ ] report DONE with: path, install command (`npx skills add <path-or-url> -g -a <agent> -y`), one-line trigger, what was deduped
+- [ ] report DONE with: path, install command (`npx skills add <path-or-url> -g -a <agent> -y`; default preselection may include grok — confirm the agent list), one-line trigger, what was deduped
 
 Ship the skill + install line, not a plan.
 
@@ -189,4 +189,5 @@ Sources change; skills rot. Refresh instead of rebuilding.
 
 ## Changelog
 
+- v6: re-ingested source (upstream 48dc9e8→87a2669: grok default agent, prototype-safe local lock, factory triage workflow); handover now notes default-agent preselection may include grok; handlers must preserve prototype-named skills in local lock. Re-baselined drift hash.
 - v5: safety guardrails (untrusted-source rules) + hardened scripts (fixed-string search, https-only/size-capped fetch, transcript input validation).
