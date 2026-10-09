@@ -59,6 +59,15 @@ test.sh                                      full check suite
 
 `.github/workflows/skill-ci.yml` runs on push + weekly: `scripts/drift-check.sh` re-runs smoke on every skill and hashes each `source:` URL. Changed source → red check telling you to run `--update`. First run baselines hashes into `.skill-ci/hashes/` (committed).
 
+## Security & External Content Policy (Snyk W011)
+
+Audited against agent skill security standards (Snyk / Tessl finding W011: *Third-party content exposure detected*). Because `turn-into-skill` ingests arbitrary web pages, GitHub repositories, video transcripts, PDFs, and OpenAPI specs, it interfaces with outsider-authored content by design:
+
+- **Data/Instruction Boundary:** All ingested content is enclosed in boundary demarcation tags (`<untrusted_external_content>`) and treated strictly as passive semantic data. Embedded imperatives, system prompt overrides, and instructions found inside external text are disregarded.
+- **Git Hook Disabling:** Repo clones are executed with `git -c core.hooksPath=/dev/null` to prevent repository hook execution on clone.
+- **Execution Sandbox:** Neither the agent nor the generated skill executes unread scripts, and live trial tests are quarantined from host secrets and external network exfiltration.
+- **Secret Isolation:** Environment secrets and private files are stripped during ingestion and omitted from generated skill templates.
+
 ## Skills built with it
 
 See [agent-skills](../agent-skills): gmail-api, tailwind-utilities, postgres-psql, github-actions — plus stripe-webhooks and mental-math in `examples/`.
