@@ -24,7 +24,7 @@ def main(path):
             s = line.strip()
             if (
                 not s
-                or s[0].isdigit()
+                or s.isdigit()  # cue identifier line only, not captions like "11 times 23"
                 or "-->" in s
                 or s.startswith(("WEBVTT", "Kind:", "Language:"))
             ):

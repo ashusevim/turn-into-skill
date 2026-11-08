@@ -53,7 +53,7 @@ test.sh                                      full check suite
 ./test.sh
 ```
 
-28 checks: skill shape, dedup/dry-run/update phases, ingestors, smoke-on-demos, scaffold round-trip.
+33 checks: skill shape, dedup/dry-run/update phases, ingestors, smoke-on-demos, scaffold round-trip.
 
 ## Skill CI
 

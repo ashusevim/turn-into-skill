@@ -118,16 +118,13 @@ npx -y skills init <working-name> --yes
 
 Write `<working-name>/SKILL.md`:
 
-```md
+````md
 ---
 name: <working-name>
 version: 1
 source: <url | path | brief origin note>
 description: <does-what + 3-5 trigger phrases starting with verbs>
 ---
-```
-
-New builds start at `version: 1`. Every `--update` bumps it and appends one line under a `## Changelog` section (keep last 5).
 
 # <Title>
 
@@ -146,7 +143,9 @@ New builds start at `version: 1`. Every `--update` bumps it and appends one line
 ## References
 
 - `references/<topic>.md` — <when to load it>
-```
+````
+
+New builds start at `version: 1`. Every `--update` bumps it and appends one line under a `## Changelog` section (keep last 5).
 
 Rules: `name` = dir name, kebab-case. `description` carries trigger branches. No `disable-model-invocation` unless user wants hand-invoke only. Large reference (>60 lines), scripts, templates go beside SKILL.md in `references/`, `scripts/`, `assets/`. Scripts only for deterministic work — never judgment.
 
