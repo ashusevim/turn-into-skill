@@ -68,7 +68,7 @@ fi
 # scaffold still works
 SMOKEDIR="/tmp/opencode/skill-smoke"
 rm -rf "$SMOKEDIR"; mkdir -p "$SMOKEDIR"; cd "$SMOKEDIR"
-npx -y skills init smoke-test-skill --yes >/dev/null 2>&1 && ok "scaffold works" || bad "scaffold failed"
+npx -y skills init smoke-test-skill >/dev/null 2>&1 && ok "scaffold works" || bad "scaffold failed"
 
 echo "---"
 echo "pass=$PASS fail=$FAIL"

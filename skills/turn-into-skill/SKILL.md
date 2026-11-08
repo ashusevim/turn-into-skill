@@ -1,6 +1,6 @@
 ---
 name: turn-into-skill
-version: 7
+version: 8
 source: https://github.com/vercel-labs/skills
 description: Turn anything into a reusable agent skill. Use when user says turn into skill, make this a skill, convert docs/repo/URL/text/video/PDF/OpenAPI/notes into a skill, or invokes /turn-into-skill. Checks existing skills first, scaffolds SKILL.md only on miss, self-tests before shipping.
 ---
@@ -78,7 +78,7 @@ Score: exact-task + fresh = reuse. Exact-task + stale = offer update (rebuild sc
 
 Completion: 2+ distinct queries run, hits scored fresh/stale/miss.
 
-On exact + fresh, STOP. Reply with name, installs, `npx skills add <owner/repo@skill> -g -a <agent> -y` (scope `-a` — bare `-g` fans out to PromptScript and fails), and link. Offer to install. Do not scaffold.
+On exact + fresh, STOP. Reply with name, installs, `npx skills add <owner/repo@skill> -g -a <agent> -y` (scope `-a` to the user's agent — bare `-g` targets every detected agent; since skills v1.7.5 agents without a global dir are skipped), and link. Offer to install. Do not scaffold.
 
 On miss, adjacent-only, or exact-but-stale (user confirms rebuild): state `No usable skill for "<query>" — building "<working-name>".` Then continue. `--dry-run` stops here after reporting the verdict.
 
@@ -113,7 +113,7 @@ Completion: steps ordered with bounds, reference split decided, zero duplicated 
 ## Phase 4 — Scaffold
 
 ```bash
-npx -y skills init <working-name> --yes
+npx -y skills init <working-name>
 ```
 
 Write `<working-name>/SKILL.md`:
@@ -160,7 +160,7 @@ Never ship an untested skill.
    bash <turn-into-skill-dir>/skills/turn-into-skill/scripts/smoke-skill.sh ./<working-name>
    ```
    Fix all FAILs: frontmatter, name==dir, trigger-rich description, done-when bounds, resolving references, no secrets.
-2. Live trial: install to the current project (`npx -y skills add ./<name> -p -y`), load the skill, run it on one sample task drawn from the source material inside a trial sandbox (no host secret access, no arbitrary external networking). Pass = correct outcome following its own steps. On failure, fix the skill (not the task), re-run smoke, retry once.
+2. Live trial: install to the current project (`npx -y skills add ./<name> -y`; project scope is the default), load the skill, run it on one sample task drawn from the source material inside a trial sandbox (no host secret access, no arbitrary external networking). Pass = correct outcome following its own steps. On failure, fix the skill (not the task), re-run smoke, retry once.
 3. Trigger test (default on; `--no-triggers` skips for personal builds):
    a. Write 20 prompts from the skill's When-to-use branches: 10 positives (should fire, paraphrased — synonyms count) + 10 negatives (same domain, different object; must stay silent).
    b. Run each against a fresh agent with the skill installed (subagent per prompt, or batched where isolation holds). Record fire/silent per prompt.
@@ -192,6 +192,7 @@ Sources change; skills rot. Refresh instead of rebuilding.
 
 ## Changelog
 
+- v8: re-ingested source (upstream e878c45→d3701c1, skills v1.7.2→v1.7.6): bare `-g` now skips agents without a global dir (PromptScript no longer fails); dropped non-existent `add -p` and no-op `init --yes`. Re-baselined drift hash.
 - v7: Snyk W011 prompt injection boundary hardening (<untrusted_external_content> demarcation, git hooks disabled on clone, Phase 5 live-trial quarantine) + upstream e878c45 sync (BOM-safe frontmatter, persistent agent selection). Re-baselined drift hash.
 - v6: re-ingested source (upstream 48dc9e8→87a2669: grok default agent, prototype-safe local lock, factory triage workflow); handover now notes default-agent preselection may include grok; handlers must preserve prototype-named skills in local lock. Re-baselined drift hash.
 - v5: safety guardrails (untrusted-source rules) + hardened scripts (fixed-string search, https-only/size-capped fetch, transcript input validation).
