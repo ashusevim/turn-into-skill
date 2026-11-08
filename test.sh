@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")" && pwd)"
+cd "$ROOT"  # README.md and local-search.sh resolve paths relative to the repo root
 SKILL="$ROOT/skills/turn-into-skill/SKILL.md"
 CMD="$ROOT/commands/turn-into-skill.md"
 SMOKE="$ROOT/skills/turn-into-skill/scripts/smoke-skill.sh"
@@ -32,7 +33,7 @@ bash "$ROOT/skills/turn-into-skill/scripts/drift-check.sh" >/dev/null 2>&1 \
   && ok "drift-check green on this repo" || bad "drift-check red on this repo"
 [[ -f "$ROOT/skills/turn-into-skill/scripts/clean-transcript.py" ]] && ok "clean-transcript present" || bad "clean-transcript missing"
 # local-search actually finds installed demo skills (Layer 0 proof)
-HITS="$(bash "$ROOT/skills/turn-into-skill/scripts/local-search.sh" "mental math" | grep -c 'mental-math')"
+HITS="$(bash "$ROOT/skills/turn-into-skill/scripts/local-search.sh" "mental math" | grep -c 'mental-math' || true)"
 [[ "$HITS" -gt 0 ]] && ok "local-search finds installed skill" || bad "local-search finds nothing"
 
 # improvement 3: new ingestors
@@ -67,7 +68,7 @@ fi
 # scaffold still works
 SMOKEDIR="/tmp/opencode/skill-smoke"
 rm -rf "$SMOKEDIR"; mkdir -p "$SMOKEDIR"; cd "$SMOKEDIR"
-npx -y skills init smoke-test-skill --yes >/dev/null 2>&1 && ok "scaffold works" || bad "scaffold failed"
+npx -y skills init smoke-test-skill >/dev/null 2>&1 && ok "scaffold works" || bad "scaffold failed"
 
 echo "---"
 echo "pass=$PASS fail=$FAIL"

@@ -18,7 +18,7 @@ OpenCode slash command:
 cp commands/turn-into-skill.md ~/.config/opencode/commands/turn-into-skill.md
 ```
 
-Any agent (pick yours after `-a` — plain `-g` installs everywhere including PromptScript, which fails):
+Any agent (pick yours after `-a`; plain `-g` targets every detected agent):
 
 ```bash
 npx -y skills add ashusevim/turn-into-skill -g -a opencode -y
@@ -53,7 +53,7 @@ test.sh                                      full check suite
 ./test.sh
 ```
 
-28 checks: skill shape, dedup/dry-run/update phases, ingestors, smoke-on-demos, scaffold round-trip.
+33 checks: skill shape, dedup/dry-run/update phases, ingestors, smoke-on-demos, scaffold round-trip.
 
 ## Skill CI
 
